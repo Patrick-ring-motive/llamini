@@ -308,6 +308,40 @@ function addMessage(role, text, extra = '') {
   return bubble;
 }
 
+function showDiag(err) {
+  empty.classList.add('hidden');
+  const ua = navigator.userAgent;
+  const wasm = typeof WebAssembly !== 'undefined';
+  const sab  = typeof SharedArrayBuffer !== 'undefined';
+  const mem  = navigator.deviceMemory ?? 'unknown';
+  const lines = [
+    '── LOAD FAILED ──',
+    '',
+    `error: ${err?.message ?? String(err)}`,
+    '',
+    ...(err?.stack ? [`stack:\n${err.stack}`, ''] : []),
+    '── diagnostics ──',
+    `wasm:   ${wasm}`,
+    `sab:    ${sab}`,
+    `ram:    ${mem} GB (hint)`,
+    `ua:     ${ua}`,
+  ];
+
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot';
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = 'error';
+  const bubble = document.createElement('pre');
+  bubble.className = 'bubble';
+  bubble.style.cssText = 'white-space:pre-wrap;word-break:break-all;font-size:11px;color:#ff7eb3;';
+  bubble.textContent = lines.join('\n');
+  wrap.appendChild(label);
+  wrap.appendChild(bubble);
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+}
+
 // Load model
 dot.className = 'model-dot loading';
 progBar.classList.add('active');
@@ -338,6 +372,7 @@ try {
   setStatus('failed to load');
   progBar.classList.remove('active');
   console.error(err);
+  showDiag(err);
 }
 
 async function send() {
