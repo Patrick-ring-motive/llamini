@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LaMini-T5-61M</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --border: #2a2a32;
+    --accent: #7efff5;
+    --accent-dim: rgba(126,255,245,0.12);
+    --text: #e8e8f0;
+    --muted: #5a5a72;
+    --user-bg: #1e1e2a;
+    --bot-bg: #111116;
+    --radius: 12px;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+
+  .model-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .model-dot.ready { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .model-dot.loading { background: #f7c948; animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.3 } }
+
+  .model-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .status-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+    letter-spacing: 0.02em;
+  }
+
+  /* Messages */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+
+  #messages::-webkit-scrollbar { width: 3px; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 88%;
+    animation: fadein 0.18s ease;
+  }
+  @keyframes fadein { from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
+
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.bot  { align-self: flex-start; align-items: flex-start; }
+
+  .bubble {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    line-height: 1.55;
+    font-size: 14.5px;
+  }
+
+  .msg.user .bubble {
+    background: var(--user-bg);
+    border: 1px solid var(--border);
+    border-bottom-right-radius: 3px;
+    color: var(--text);
+  }
+
+  .msg.bot .bubble {
+    background: var(--bot-bg);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 3px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    font-weight: 300;
+  }
+
+  .msg.bot .bubble.thinking {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .msg-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    padding: 0 2px;
+  }
+
+  /* Input area */
+  #input-area {
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+
+  #form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  #input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    padding: 10px 14px;
+    resize: none;
+    max-height: 120px;
+    min-height: 44px;
+    line-height: 1.4;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  #input:focus { border-color: var(--accent); }
+  #input::placeholder { color: var(--muted); }
+
+  #send {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #send:hover { background: rgba(126,255,245,0.2); }
+  #send:disabled { opacity: 0.3; cursor: not-allowed; }
+  #send svg { width: 18px; height: 18px; }
+
+  /* Load progress bar */
+  #progress-bar {
+    height: 2px;
+    background: var(--border);
+    flex-shrink: 0;
+    overflow: hidden;
+    display: none;
+  }
+  #progress-bar.active { display: block; }
+  #progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* Empty state */
+  #empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  #empty.hidden { display: none; }
+  #empty .e-title {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+  #empty .e-sub {
+    font-size: 12px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="model-dot" id="dot"></div>
+    <span class="model-name">LaMini-T5-61M</span>
+    <span class="status-text" id="status">loading model…</span>
+  </header>
+
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+
+  <div id="messages">
+    <div id="empty">
+      <span class="e-title">61M params · in-browser</span>
+      <span class="e-sub">ask it anything</span>
+    </div>
+  </div>
+
+  <div id="input-area">
+    <div id="form">
+      <textarea id="input" rows="1" placeholder="Ask something…" disabled></textarea>
+      <button id="send" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0';
+
+const MODEL = 'Xenova/LaMini-T5-61M';
+
+const dot      = document.getElementById('dot');
+const status   = document.getElementById('status');
+const messages = document.getElementById('messages');
+const empty    = document.getElementById('empty');
+const input    = document.getElementById('input');
+const sendBtn  = document.getElementById('send');
+const progBar  = document.getElementById('progress-bar');
+const progFill = document.getElementById('progress-fill');
+
+// auto-grow textarea
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+});
+
+let generator = null;
+let busy = false;
+
+function setStatus(text) { status.textContent = text; }
+
+function addMessage(role, text, extra = '') {
+  empty.classList.add('hidden');
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = role === 'user' ? 'you' : 'lamini';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble' + (extra ? ' ' + extra : '');
+  bubble.textContent = text;
+  wrap.appendChild(label);
+  wrap.appendChild(bubble);
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+  return bubble;
+}
+
+// Load model
+dot.className = 'model-dot loading';
+progBar.classList.add('active');
+
+try {
+  generator = await pipeline('text2text-generation', MODEL, {
+    progress_callback: (p) => {
+      if (p.status === 'downloading' && p.total) {
+        const pct = Math.round((p.loaded / p.total) * 100);
+        progFill.style.width = pct + '%';
+        setStatus(`downloading… ${pct}%`);
+      } else if (p.status === 'initiate') {
+        setStatus('loading weights…');
+      } else if (p.status === 'loading') {
+        setStatus('compiling wasm…');
+      }
+    }
+  });
+
+  dot.className = 'model-dot ready';
+  setStatus('ready');
+  progBar.classList.remove('active');
+  input.disabled = false;
+  sendBtn.disabled = false;
+  input.focus();
+} catch (err) {
+  dot.className = 'model-dot';
+  setStatus('failed to load');
+  progBar.classList.remove('active');
+  console.error(err);
+}
+
+async function send() {
+  if (busy || !generator) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  busy = true;
+  sendBtn.disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
+
+  addMessage('user', text);
+  const thinkBubble = addMessage('bot', '…', 'thinking');
+
+  try {
+    const result = await generator(text, {
+      max_new_tokens: 128,
+      // T5 doesn't need much more — it's a text2text model
+    });
+    const out = result[0]?.generated_text ?? '(no output)';
+    thinkBubble.textContent = out;
+    thinkBubble.classList.remove('thinking');
+  } catch (err) {
+    thinkBubble.textContent = 'error: ' + err.message;
+    thinkBubble.classList.remove('thinking');
+    console.error(err);
+  }
+
+  busy = false;
+  sendBtn.disabled = false;
+  input.focus();
+}
+
+sendBtn.addEventListener('click', send);
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+});
+</script>
+</body>
+</html>
