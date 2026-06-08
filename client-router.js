@@ -55,8 +55,12 @@
                             });
                         }
                         if (routesURL.endsWith('.gz')) {
-                            const ds = new DecompressionStream("gzip");
-                            res = new Response(res.body.pipeThrough(new DecompressionStream("gzip")), res);
+                            const decompressed = res.body.pipeThrough(new DecompressionStream("gzip"));
+                            res = new Response(decompressed, {
+                                status: res.status,
+                                statusText: res.statusText,
+                                headers: res.headers,
+                            });
                         }
                         console.log(res,await res.clone().text());
                         return res;
