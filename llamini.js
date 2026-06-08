@@ -84,6 +84,7 @@
     progBar.classList.add('active');
 
     try {
+        let startTime = new Date().getTime();
       generator = await pipeline('text2text-generation', MODEL, {
         dtype: 'q8',
         progress_callback: (p) => {
@@ -111,6 +112,7 @@
       progBar.classList.remove('active');
       console.error(err);
       showDiag(err);
+        addMessage(`Took ${(new Date().getTime()/startTime)/1000} seconds`);
     }
 
     async function send() {
