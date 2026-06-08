@@ -41,11 +41,13 @@
             globalThis.fetch = Object.setPrototypeOf(async function fetch(...args) {
                 let res;
                 try {
-                    console.log(...args);
+                    if(env === 'DEV'){
+                        console.log(...args);
+                    }
                     const url = String(args[0].url ?? args[0]);
                     if (routes[url]) {
                         const routesURL = String(routes[url].url ?? routes[url]);
-                        res = await _fetch(`${routesURL}?${env == 'DEV' ? new Date().getTime() : ''}`);
+                        res = await _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
                             for (const header in routes[url].headers) {
@@ -63,7 +65,9 @@
                                 headers: res.headers,
                             });
                         }
-                        console.log(res,await res.clone().text());
+                        if(env === 'DEV'){
+                            console.log(res,await res.clone().text());
+                        }
                         return res;
                     }
                     res = await _fetch.apply(this, args);
