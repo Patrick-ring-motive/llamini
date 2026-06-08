@@ -1,7 +1,7 @@
     (() => {
         const routes = {
             'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm': {
-                url: './ort-wasm-simd-threaded.jsep.gz',
+                url: './ort-wasm-simd-threaded.jsep.wasm.gz',
                 headers: {
                     'content-type': 'application/wasm'
                 }
