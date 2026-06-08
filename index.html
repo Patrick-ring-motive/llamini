@@ -45,7 +45,7 @@
       globalThis.fetch = Object.setPrototypeOf(async function fetch(...args){
         const url = String(args[0].url ?? args[0]);
         if(url.startsWith('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm')){
-          const res = await fetch('./ort-wasm-simd-threaded.jsep.zip');
+          const res = await _fetch('./ort-wasm-simd-threaded.jsep.zip');
           const ds = new DecompressionStream("gzip");
           return new Response(res.body.pipeThrough(new DecompressionStream("gzip")),res);
         }
