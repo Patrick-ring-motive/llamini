@@ -40,7 +40,7 @@
                     const url = String(args[0].url ?? args[0]);
                     if (routes[url]) {
                         const routesURL = String(routes[url].url ?? routes[url]);
-                        const res = await _fetch(routesURL);
+                        const res = await _fetch(`${routesURL}?${new Date().getTime()}`);
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
                             for (header in routes[url].headers) {
