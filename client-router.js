@@ -23,8 +23,11 @@
               }
               Object.defineProptery(res,'headers',{value});
             }
-            const ds = new DecompressionStream("gzip");
-            return new Response(res.body.pipeThrough(new DecompressionStream("gzip")),res);
+            if(routes[url].endsWith('.gz')){
+                const ds = new DecompressionStream("gzip");
+                return new Response(res.body.pipeThrough(new DecompressionStream("gzip")),res);
+            }
+            return res;
           }
           return await _fetch.apply(this,args);
         }catch(e){
