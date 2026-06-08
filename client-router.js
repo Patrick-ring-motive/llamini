@@ -8,7 +8,9 @@
             },
             'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/config.json': './llamini-config.json',
             'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer.json': './llamini-tokenizer.json',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer_config.json': './llamini-tokenizer-config.json'
+            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer_config.json': './llamini-tokenizer-config.json',
+            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/generation_config.json':'./generation-config.json',
+            
         };
         (()=>{
             const _parse = JSON.parse;
