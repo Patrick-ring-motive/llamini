@@ -1,0 +1,82 @@
+// NOTE: This file creates a service worker that cross-origin-isolates the page
+// (read more here: https://web.dev/coop-coep/) which allows us to use wasm threads.
+// Normally you would set the COOP and COEP headers on the server to do this,
+// but Github Pages doesn't allow this, so this is a hack to do that.
+
+/* Edited version of: coi-serviceworker v0.1.6 - Guido Zuidhof, licensed under MIT */
+// From here: https://github.com/gzuidhof/coi-serviceworker
+
+if (typeof window === 'undefined') {
+  // ── SERVICE WORKER SIDE ──────────────────────────────────────────────────
+  self.addEventListener("install", () => self.skipWaiting());
+  self.addEventListener("activate", e => e.waitUntil(self.clients.claim()));
+
+  async function handleFetch(request) {
+    if (request.cache === "only-if-cached" && request.mode !== "same-origin") {
+      return;
+    }
+
+    // We need to set `credentials` to "omit" for no-cors requests, per:
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1309901#c7
+    if (request.mode === "no-cors") {
+      request = new Request(request.url, {
+        cache: request.cache,
+        credentials: "omit",
+        headers: request.headers,
+        integrity: request.integrity,
+        destination: request.destination,
+        keepalive: request.keepalive,
+        method: request.method,
+        mode: request.mode,
+        redirect: request.redirect,
+        referrer: request.referrer,
+        referrerPolicy: request.referrerPolicy,
+        signal: request.signal,
+      });
+    }
+
+    let r = await fetch(request).catch(e => console.error(e));
+
+    if (r.status === 0) {
+      return r;
+    }
+
+    const headers = new Headers(r.headers);
+    headers.set("Cross-Origin-Embedder-Policy", "credentialless"); // or: require-corp
+    headers.set("Cross-Origin-Opener-Policy", "same-origin");
+
+    return new Response(r.body, { status: r.status, statusText: r.statusText, headers });
+  }
+
+  // respondWith must be called synchronously (can be passed a Promise)
+  self.addEventListener("fetch", e => e.respondWith(handleFetch(e.request)));
+
+} else {
+  // ── PAGE SIDE ────────────────────────────────────────────────────────────
+  (async function () {
+    if (window.crossOriginIsolated !== false) return;
+
+    const registration = await navigator.serviceWorker
+      .register(window.document.currentScript.src)
+      .catch(e => console.error("COOP/COEP Service Worker failed to register:", e));
+
+    if (registration) {
+      console.log("COOP/COEP Service Worker registered", registration.scope);
+
+      registration.addEventListener("updatefound", () => {
+        console.log("Reloading page to make use of updated COOP/COEP Service Worker.");
+        window.location.reload();
+      });
+
+      // If the SW is active but not yet controlling the page, reload once.
+      if (registration.active && !navigator.serviceWorker.controller) {
+        console.log("Reloading page to make use of COOP/COEP Service Worker.");
+        window.location.reload();
+      }
+    }
+  })();
+}
+
+// To deregister later if needed:
+// let registrations = await navigator.serviceWorker.getRegistrations();
+// for (let r of registrations) { await r.unregister(); }
