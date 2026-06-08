@@ -46,7 +46,7 @@
         try{
           const url = String(args[0].url ?? args[0]);
           if(url.startsWith('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm')){
-            const res = await _fetch('./ort-wasm-simd-threaded.jsep.zip');
+            const res = await _fetch('./ort-wasm-simd-threaded.jsep.gz');
             const value = new Headers(res.headers.entries());
             value.set('content-type','application/wasm');
             Object.defineProptery(res,'headers',{value});
