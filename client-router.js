@@ -46,7 +46,7 @@
                             for (header in routes[url].headers) {
                                 value.set(header, routes[url].headers[header]);
                             }
-                            Object.defineProptery(res, 'headers', {
+                            Object.defineProperty(res, 'headers', {
                                 value
                             });
                         }
