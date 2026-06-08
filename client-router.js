@@ -47,7 +47,7 @@
                         res = await _fetch(`${routesURL}?${new Date().getTime()}`);
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
-                            for (header in routes[url].headers) {
+                            for (const header in routes[url].headers) {
                                 value.set(header, routes[url].headers[header]);
                             }
                             Object.defineProperty(res, 'headers', {
