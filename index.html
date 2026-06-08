@@ -347,19 +347,6 @@
       </div>
     </div>
   </div>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./coi-serviceworker.js').then(() => {
-        if (!crossOriginIsolated && !sessionStorage.getItem('coi-reloaded')) {
-          sessionStorage.setItem('coi-reloaded', '1');
-          location.reload();
-        }
-      }).catch(() => {});
-    }
-
-  </script>
-
   <script type="module">
     import {
       pipeline,
