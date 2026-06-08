@@ -106,7 +106,7 @@
         input.disabled = false;
         sendBtn.disabled = false;
         input.focus();
-        addMessage('System',`Took ${(new Date().getTime()/startTime)/1000} seconds`);
+        addMessage('System',`Took ${(new Date().getTime()-startTime)/1000} seconds`);
     } catch (err) {
         dot.className = 'model-dot';
         setStatus('failed to load');
