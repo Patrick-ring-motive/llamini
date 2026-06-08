@@ -106,6 +106,11 @@
         input.disabled = false;
         sendBtn.disabled = false;
         input.focus();
+        const ua = navigator.userAgent;
+        const wasm = typeof WebAssembly !== 'undefined';
+        const sab = typeof SharedArrayBuffer !== 'undefined';
+        const mem = navigator.deviceMemory ?? 'unknown';
+        console.log({ua,wasm,sab,mem});
         addMessage('System',`Took ${(new Date().getTime()-startTime)/1000} seconds`);
     } catch (err) {
         dot.className = 'model-dot';
