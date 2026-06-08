@@ -33,7 +33,7 @@
       wrap.className = `msg ${role}`;
       const label = document.createElement('div');
       label.className = 'msg-label';
-      label.textContent = role === 'user' ? 'you' : 'lamini';
+      label.textContent = role === 'user' ? 'you' : 'Llamini';
       const bubble = document.createElement('div');
       bubble.className = 'bubble' + (extra ? ' ' + extra : '');
       bubble.textContent = text;
