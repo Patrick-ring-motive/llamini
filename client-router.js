@@ -44,7 +44,7 @@
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
                             for (header in routes[url].headers) {
-                                value.set(key, routes[url].headers[key]);
+                                value.set(header, routes[url].headers[header]);
                             }
                             Object.defineProptery(res, 'headers', {
                                 value
