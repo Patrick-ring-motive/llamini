@@ -27,7 +27,7 @@
                 try{
                     return await _json.apply(this,args);
                 }catch(e){
-                    console.warn(e,...args);
+                    console.warn(e,this,...args);
                     throw e;
                 }
             },_json);
