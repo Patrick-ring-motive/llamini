@@ -13,6 +13,7 @@
       const _fetch = globalThis.fetch;
       globalThis.fetch = Object.setPrototypeOf(async function fetch(...args){
         try{
+            console.log(...args);
           const url = String(args[0].url ?? args[0]);
           if(routes[url]){
             const routesURL = routes[url].url ?? routes[url];
