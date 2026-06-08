@@ -23,7 +23,7 @@
         })();
         (()=>{
             const _json = Response.prototype.json;
-            Response.prototype.json = Object.setPrototypeOf(function json(...args){
+            Response.prototype.json = Object.setPrototypeOf(async function json(...args){
                 try{
                     return await _json.apply(this,args);
                 }catch(e){
