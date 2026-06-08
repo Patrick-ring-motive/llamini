@@ -6,16 +6,16 @@
             'content-type':'application/wasm'
           }
         },
-        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/config.json':{
-          url:'./llamini-config.json',
-        }
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/config.json':'./llamini-config.json',
+          'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer.json':'./llamini-tokenizer.json',
       };
       const _fetch = globalThis.fetch;
       globalThis.fetch = Object.setPrototypeOf(async function fetch(...args){
         try{
           const url = String(args[0].url ?? args[0]);
           if(routes[url]){
-            const res = await _fetch(routes[url].url);
+            const routesURL = routes[url].url ?? routes[url];
+            const res = await _fetch(routesURL);
             if(routes[url].headers){
               const value = new Headers(res.headers.entries());
               for(header in routes[url].headers){
@@ -23,7 +23,7 @@
               }
               Object.defineProptery(res,'headers',{value});
             }
-            if(routes[url].endsWith('.gz')){
+            if(routesURL.endsWith('.gz')){
                 const ds = new DecompressionStream("gzip");
                 return new Response(res.body.pipeThrough(new DecompressionStream("gzip")),res);
             }
