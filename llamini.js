@@ -106,13 +106,13 @@
       input.disabled = false;
       sendBtn.disabled = false;
       input.focus();
+        addMessage(`Took ${(new Date().getTime()/startTime)/1000} seconds`);
     } catch (err) {
       dot.className = 'model-dot';
       setStatus('failed to load');
       progBar.classList.remove('active');
       console.error(err);
       showDiag(err);
-        addMessage(`Took ${(new Date().getTime()/startTime)/1000} seconds`);
     }
 
     async function send() {
