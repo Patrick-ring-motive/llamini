@@ -10,8 +10,8 @@
             'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer.json': './llamini-tokenizer.json',
             'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer_config.json': './llamini-tokenizer-config.json',
             'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/generation_config.json':'./generation-config.json',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/decoder_model_merged_quantized.onnx':'decoder_model_merged_quantized.onnx.gz',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/encoder_model_quantized.onnx':'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/encoder_model_quantized.onnx.gz'
+            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/decoder_model_merged_quantized.onnx':'./decoder_model_merged_quantized.onnx.gz',
+            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/encoder_model_quantized.onnx':'./encoder_model_quantized.onnx.gz'
         };
         (()=>{
             const _parse = JSON.parse;
