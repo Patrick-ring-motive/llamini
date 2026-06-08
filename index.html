@@ -266,6 +266,17 @@
   </div>
 </div>
 
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./coi-serviceworker.js').then(() => {
+    if (!crossOriginIsolated && !sessionStorage.getItem('coi-reloaded')) {
+      sessionStorage.setItem('coi-reloaded', '1');
+      location.reload();
+    }
+  }).catch(() => {});
+}
+</script>
+
 <script type="module">
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0';
 
@@ -323,6 +334,7 @@ function showDiag(err) {
     '── diagnostics ──',
     `wasm:   ${wasm}`,
     `sab:    ${sab}`,
+    `coi:    ${crossOriginIsolated}`,
     `ram:    ${mem} GB (hint)`,
     `ua:     ${ua}`,
   ];
@@ -348,6 +360,7 @@ progBar.classList.add('active');
 
 try {
   generator = await pipeline('text2text-generation', MODEL, {
+    dtype: 'q8',
     progress_callback: (p) => {
       if (p.status === 'downloading' && p.total) {
         const pct = Math.round((p.loaded / p.total) * 100);
