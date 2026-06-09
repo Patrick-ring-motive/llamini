@@ -1,4 +1,4 @@
-    import {
+        import {
         pipeline,
         env
     } from './transformers@3.5.0.js';
@@ -20,13 +20,13 @@
         input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
 
-    const dedup = (txt='') =>{
+    const dedup = (txt = '') => {
         const uniq = [];
         const words = txt.split(/\s+/);
         const words_length = words.length;
-        for(let i = 0; i !== words_length; ++i){
+        for (let i = 0; i !== words_length; ++i) {
             const word = words[i];
-            if(word !== words[i+1]){
+            if (word !== words[i + 1]) {
                 uniq.push(word);
             }
         }
@@ -101,23 +101,23 @@
         generator = await pipeline('text2text-generation', MODEL, {
             dtype: 'q8',
             progress_callback: (p) => {
-                try{
-                if (p.status === 'downloading' && p.total) {
-                    const pct = Math.round((p.loaded / p.total) * 100);
-                    progFill.style.width = pct + '%';
-                    setStatus(`downloading… ${pct}%`);
-                } else if (p.status === 'initiate') {
-                    setStatus('loading weights…');
-                } else if (p.status === 'loading') {
-                    setStatus('compiling wasm…');
+                try {
+                    if (p.status === 'downloading' && p.total) {
+                        const pct = Math.round((p.loaded / p.total) * 100);
+                        progFill.style.width = pct + '%';
+                        setStatus(`downloading… ${pct}%`);
+                    } else if (p.status === 'initiate') {
+                        setStatus('loading weights…');
+                    } else if (p.status === 'loading') {
+                        setStatus('compiling wasm…');
+                    }
+                } catch (err) {
+                    dot.className = 'model-dot';
+                    setStatus('failed to load');
+                    progBar.classList.remove('active');
+                    console.error(err);
+                    showDiag(err);
                 }
-             } catch (err) {
-        dot.className = 'model-dot';
-        setStatus('failed to load');
-        progBar.classList.remove('active');
-        console.error(err);
-        showDiag(err);
-    }
             }
         });
 
@@ -131,8 +131,13 @@
         const wasm = typeof WebAssembly !== 'undefined';
         const sab = typeof SharedArrayBuffer !== 'undefined';
         const mem = navigator.deviceMemory ?? 'unknown';
-        console.log({ua,wasm,sab,mem});
-        addMessage('System',`Took ${(new Date().getTime()-startTime)/1000} seconds`);
+        console.log({
+            ua,
+            wasm,
+            sab,
+            mem
+        });
+        addMessage('System', `Took ${(new Date().getTime()-startTime)/1000} seconds`);
     } catch (err) {
         dot.className = 'model-dot';
         setStatus('failed to load');
