@@ -45,6 +45,18 @@ const decompressStream = (record,format) =>{
   return record.clone().body.pipeThrough(destream);
 };
 
-const decompress = record =>{
-  
+export const decompress = record =>{
+  switch (compressionFormat) {
+    case br:
+      return decompressStream(record,br);
+    case gz:
+      return decompressStream(record,br);
+    default:
+      return pakoInflate(record);
+  }
 };
+
+
+
+
+
