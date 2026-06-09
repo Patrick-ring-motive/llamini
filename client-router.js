@@ -48,13 +48,13 @@
                     const url = String(args[0].url ?? args[0]);
                     if (routes[url]) {
                         const routesURL = String(routes[url].url ?? routes[url]);
-                        if(!precache[routesURL]){
-                           precache[routesURL] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
+                        if(!precache[url]){
+                           precache[url] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
                         }
-                        if(precache[routesURL] instanceof Promise){
-                            precache[routesURL] = (await precache[routesURL]).clone();
+                        if(precache[url] instanceof Promise){
+                            precache[url] = (await precache[url]).clone();
                         }
-                        res = precache[routesURL].clone();
+                        res = precache[url].clone();
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
                             for (const header in routes[url].headers) {
@@ -92,7 +92,8 @@
                 }
             }, _fetch);
             for(const url in routes){
-                if(url.endsWith('.gz')){
+                const routesURL = String(routes[url]?.url ?? routes[url]);
+                if(routesURL.endsWith('.gz')){
                     fetch(url);
                 }
             }
