@@ -101,6 +101,7 @@
         generator = await pipeline('text2text-generation', MODEL, {
             dtype: 'q8',
             progress_callback: (p) => {
+                try{
                 if (p.status === 'downloading' && p.total) {
                     const pct = Math.round((p.loaded / p.total) * 100);
                     progFill.style.width = pct + '%';
@@ -110,6 +111,13 @@
                 } else if (p.status === 'loading') {
                     setStatus('compiling wasm…');
                 }
+             } catch (err) {
+        dot.className = 'model-dot';
+        setStatus('failed to load');
+        progBar.classList.remove('active');
+        console.error(err);
+        showDiag(err);
+    }
             }
         });
 
