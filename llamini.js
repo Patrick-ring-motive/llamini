@@ -167,7 +167,8 @@
                 repetition_penalty:1.1,
                     length_penalty:1.1,
                     token_healing:true,
-                    renormalize_logits:true
+                    renormalize_logits:true,
+                    num_beams:4
                     
             });
             const out = dedup(result?.[0]?.generated_text) || '(no output)';
