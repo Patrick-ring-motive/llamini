@@ -54,7 +54,7 @@
                         if(precache[routesURL] instanceof Promise){
                             precache[routesURL] = await precache[routesURL];
                         }
-                        res = (await precache[routesURL]).clone();
+                        res = precache[routesURL].clone();
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
                             for (const header in routes[url].headers) {
