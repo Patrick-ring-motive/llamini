@@ -1,10 +1,3 @@
-        import {
-        pipeline,
-        env
-    } from './transformers@3.5.0.js';
-
-    const MODEL = 'Xenova/LaMini-T5-61M';
-
     const dot = document.getElementById('dot');
     const status = document.getElementById('status');
     const messages = document.getElementById('messages');
@@ -20,21 +13,12 @@
         input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
 
-    const dedup = (txt = '') => {
-        const uniq = [];
-        const words = txt.split(/\s+/);
-        const words_length = words.length;
-        for (let i = 0; i !== words_length; ++i) {
-            const word = words[i];
-            if (word !== words[i + 1]) {
-                uniq.push(word);
-            }
-        }
-        return uniq.join(' ');
-    };
-
-    let generator = null;
+    let modelReady = false;
     let busy = false;
+    let pendingId = 0;
+    let pendingBubble = null;
+
+    const worker = new Worker('./llamini-worker.js', { type: 'module' });
 
     function setStatus(text) {
         status.textContent = text;
@@ -92,62 +76,60 @@
         messages.scrollTop = messages.scrollHeight;
     }
 
+    // Handle worker messages
+    worker.addEventListener('message', (e) => {
+        const msg = e.data;
+        switch (msg.type) {
+            case 'status':
+                setStatus(msg.text);
+                break;
+            case 'progress':
+                progFill.style.width = msg.pct + '%';
+                break;
+            case 'loaded':
+                modelReady = true;
+                dot.className = 'model-dot ready';
+                setStatus('ready');
+                progBar.classList.remove('active');
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+                addMessage('System', `Took ${msg.elapsed} seconds`);
+                break;
+            case 'load-error':
+                dot.className = 'model-dot';
+                setStatus('failed to load');
+                progBar.classList.remove('active');
+                showDiag({ message: msg.message, stack: msg.stack });
+                break;
+            case 'result':
+                if (pendingBubble) {
+                    pendingBubble.textContent = msg.text;
+                    pendingBubble.classList.remove('thinking');
+                }
+                busy = false;
+                sendBtn.disabled = false;
+                input.focus();
+                break;
+            case 'result-error':
+                if (pendingBubble) {
+                    pendingBubble.textContent = 'error: ' + msg.message;
+                    pendingBubble.classList.remove('thinking');
+                }
+                busy = false;
+                sendBtn.disabled = false;
+                input.focus();
+                break;
+        }
+    });
+
     // Load model
     dot.className = 'model-dot loading';
     progBar.classList.add('active');
+    worker.postMessage({ type: 'load' });
 
-    try {
-        let startTime = new Date().getTime();
-        generator = await pipeline('text2text-generation', MODEL, {
-            dtype: 'q8',
-            progress_callback: (p) => {
-                try {
-                    if (p.status === 'downloading' && p.total) {
-                        const pct = Math.round((p.loaded / p.total) * 100);
-                        progFill.style.width = pct + '%';
-                        setStatus(`downloading… ${pct}%`);
-                    } else if (p.status === 'initiate') {
-                        setStatus('loading weights…');
-                    } else if (p.status === 'loading') {
-                        setStatus('compiling wasm…');
-                    }
-                } catch (err) {
-                    dot.className = 'model-dot';
-                    setStatus('failed to load');
-                    progBar.classList.remove('active');
-                    console.error(err);
-                    showDiag(err);
-                }
-            }
-        });
-
-        dot.className = 'model-dot ready';
-        setStatus('ready');
-        progBar.classList.remove('active');
-        input.disabled = false;
-        sendBtn.disabled = false;
-        input.focus();
-        const ua = navigator.userAgent;
-        const wasm = typeof WebAssembly !== 'undefined';
-        const sab = typeof SharedArrayBuffer !== 'undefined';
-        const mem = navigator.deviceMemory ?? 'unknown';
-        console.log({
-            ua,
-            wasm,
-            sab,
-            mem
-        });
-        addMessage('System', `Took ${(new Date().getTime()-startTime)/1000} seconds`);
-    } catch (err) {
-        dot.className = 'model-dot';
-        setStatus('failed to load');
-        progBar.classList.remove('active');
-        console.error(err);
-        showDiag(err);
-    }
-
-    async function send() {
-        if (busy || !generator) return;
+    function send() {
+        if (busy || !modelReady) return;
         const text = input.value.trim();
         if (!text) return;
 
@@ -157,32 +139,9 @@
         input.style.height = 'auto';
 
         addMessage('user', text);
-        const thinkBubble = addMessage('bot', '…', 'thinking');
-
-        try {
-            const result = await generator(text, {
-                max_new_tokens: 128,
-                temperature:0.7,
-                do_sample:true,
-                repetition_penalty:1.1,
-               length_penalty:1.1,
-                    token_healing:true,
-                    renormalize_logits:true,
-                    num_beams:4,
-                    use_cache:true
-            });
-            const out = dedup(result?.[0]?.generated_text) || '(no output)';
-            thinkBubble.textContent = out;
-            thinkBubble.classList.remove('thinking');
-        } catch (err) {
-            thinkBubble.textContent = 'error: ' + err.message;
-            thinkBubble.classList.remove('thinking');
-            console.error(err);
-        }
-
-        busy = false;
-        sendBtn.disabled = false;
-        input.focus();
+        pendingBubble = addMessage('bot', '…', 'thinking');
+        pendingId++;
+        worker.postMessage({ type: 'generate', id: pendingId, text });
     }
 
     sendBtn.addEventListener('click', send);
