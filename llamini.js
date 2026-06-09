@@ -163,7 +163,8 @@
             const result = await generator(text, {
                 max_new_tokens: 128,
                 temperature:0.7,
-                    do_sample:true
+                do_sample:true,
+                repetition_penalty:1.1
             });
             const out = dedup(result?.[0]?.generated_text) || '(no output)';
             thinkBubble.textContent = out;
