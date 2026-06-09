@@ -1,3 +1,11 @@
+const fetchResponse = async(...args)=>{
+  try{
+    return await fetch(...args);
+  }catch(e){
+    console.warn(e,...args);
+    return new Response(String(e),{status:500,statusText:String(e)});
+  }
+};
 // NOTE: This file creates a service worker that cross-origin-isolates the page
 // (read more here: https://web.dev/coop-coep/) which allows us to use wasm threads.
 // Normally you would set the COOP and COEP headers on the server to do this,
@@ -35,9 +43,9 @@ if (typeof window === 'undefined') {
       });
     }
 
-    let r = await fetch(request).catch(e => console.error(e));
+    let r = await fetchResponse(request);
 
-    if (r.status === 0) {
+    if (!r?.status) {
       return r;
     }
 
