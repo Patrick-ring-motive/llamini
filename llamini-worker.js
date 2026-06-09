@@ -1,5 +1,15 @@
 import { pipeline, env } from './transformers@3.5.0.js';
 
+// Register listener before top-level await so no messages are dropped
+self.addEventListener('message', (e) => {
+    const { type, id, text } = e.data;
+    if (type === 'load') {
+        loadModel();
+    } else if (type === 'generate') {
+        generate(id, text);
+    }
+});
+
 await import('./client-router.js?'+(env == 'DEV' ? new Date().getTime() : ''));
 
 const MODEL = 'Xenova/LaMini-T5-61M';
@@ -68,12 +78,3 @@ async function generate(id, text) {
         self.postMessage({ type: 'result-error', id, message: err.message });
     }
 }
-
-self.addEventListener('message', (e) => {
-    const { type, id, text } = e.data;
-    if (type === 'load') {
-        loadModel();
-    } else if (type === 'generate') {
-        generate(id, text);
-    }
-});
