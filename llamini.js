@@ -18,6 +18,19 @@
     let pendingId = 0;
     let pendingBubble = null;
 
+    const dedup = (txt = '') => {
+        const uniq = [];
+        const words = txt.split(/\s+/);
+        const words_length = words.length;
+        for (let i = 0; i < words_length; ++i) {
+            const word = words[i];
+            if (word !== words[i + 1]) {
+                uniq.push(word);
+            }
+        }
+        return uniq.join(' ');
+    };
+
     const worker = new Worker('./llamini-worker.js', { type: 'module' });
 
     function setStatus(text) {
@@ -102,10 +115,20 @@
                 progBar.classList.remove('active');
                 showDiag({ message: msg.message, stack: msg.stack });
                 break;
-            case 'result':
+            case 'token':
                 if (pendingBubble) {
-                    pendingBubble.textContent = msg.text;
-                    pendingBubble.classList.remove('thinking');
+                    if (pendingBubble.classList.contains('thinking')) {
+                        pendingBubble.textContent = '';
+                        pendingBubble.classList.remove('thinking');
+                    }
+                    pendingBubble.textContent += msg.token;
+                    messages.scrollTop = messages.scrollHeight;
+                }
+                break;
+            case 'result-done':
+                if (pendingBubble) {
+                    const raw = pendingBubble.textContent.trim();
+                    pendingBubble.textContent = dedup(raw) || '(no output)';
                 }
                 busy = false;
                 sendBtn.disabled = false;
