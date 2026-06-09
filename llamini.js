@@ -162,14 +162,14 @@
         try {
             const result = await generator(text, {
                 max_new_tokens: 128,
-                temperature:0.7,
+                temperature:0.5,
                 do_sample:true,
                 repetition_penalty:1.1,
                     length_penalty:1.1,
                     token_healing:true,
                     renormalize_logits:true,
-                    num_beams:4
-                    
+                    num_beams:4,
+                    use_cache:true
             });
             const out = dedup(result?.[0]?.generated_text) || '(no output)';
             thinkBubble.textContent = out;
