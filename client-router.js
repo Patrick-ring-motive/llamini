@@ -1,5 +1,6 @@
     (() => {
         const env = /dev/i.test(location.href) ? 'DEV' : 'PROD';
+        const precache {};
         const routes = {
             'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm': {
                 url: './ort-wasm-simd-threaded.jsep.wasm.gz',
@@ -47,7 +48,13 @@
                     const url = String(args[0].url ?? args[0]);
                     if (routes[url]) {
                         const routesURL = String(routes[url].url ?? routes[url]);
-                        res = await _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
+                        if(!precache[routesURL]){
+                           precache[routesURL] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
+                        }
+                        if(precache[routesURL] instanceof Promise){
+                            precache[routesURL] = await precache[routesURL];
+                        }
+                        res = (await precache[routesURL]).clone();
                         if (routes[url].headers) {
                             const value = new Headers(res.headers.entries());
                             for (const header in routes[url].headers) {
@@ -82,5 +89,10 @@
                     });
                 }
             }, _fetch);
+            for(const url in routes){
+                if(url.endWith('.gz')){
+                    fetch(url);
+                }
+            }
         })();
     })();
