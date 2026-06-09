@@ -52,7 +52,7 @@
                            precache[routesURL] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
                         }
                         if(precache[routesURL] instanceof Promise){
-                            precache[routesURL] = await precache[routesURL];
+                            precache[routesURL] = (await precache[routesURL]).clone();
                         }
                         res = precache[routesURL].clone();
                         if (routes[url].headers) {
