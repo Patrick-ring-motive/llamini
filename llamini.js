@@ -162,7 +162,7 @@
         try {
             const result = await generator(text, {
                 max_new_tokens: 128,
-                temperature:0.5,
+              //  temperature:0.5,
                 do_sample:true,
                 repetition_penalty:1.1,
                     length_penalty:1.1,
