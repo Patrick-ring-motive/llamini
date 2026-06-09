@@ -90,7 +90,7 @@
                 }
             }, _fetch);
             for(const url in routes){
-                if(url.endWith('.gz')){
+                if(url.endsWith('.gz')){
                     fetch(url);
                 }
             }
