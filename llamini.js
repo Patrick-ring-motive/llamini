@@ -164,7 +164,11 @@
                 max_new_tokens: 128,
                 temperature:0.7,
                 do_sample:true,
-                repetition_penalty:1.1
+                repetition_penalty:1.1,
+                    length_penalty:1.1,
+                    token_healing:true,
+                    renormalize_logits:true
+                    
             });
             const out = dedup(result?.[0]?.generated_text) || '(no output)';
             thinkBubble.textContent = out;
