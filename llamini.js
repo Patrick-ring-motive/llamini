@@ -27,7 +27,7 @@
         for(let i = 0; i !== words_length; ++i){
             const word = words[i];
             if(word !== words[i+1]){
-                uniq.push(words);
+                uniq.push(word);
             }
             return uniq.join(' ');
         }
