@@ -1,19 +1,28 @@
 let compressionFormat;
 let pakoReady;
-const pakoInit = async()=>{
-  await import('https://cdn.jsdelivr.net/npm/pretty-pako/pretty-pako.js');
+const pakoInit = ()=>{
+  pakoReady = import('https://cdn.jsdelivr.net/npm/pretty-pako/pretty-pako.js');
+  (async()=>{
+    pakoReady = await pakoReady;
+  })();
+};
+const Q = fn =>{
+  try{
+    return fn();
+  }catch{}
 };
 const pakoInflate = (record) =>{
+  const body = record.clone().body;
   return new ReadableStream({
     async start(controller){
       if(!pakoReady){
-        pakoReady = pakoInit();
+        pakoInit();
       }
       if(pakoReady instanceof Promise){
-        pakoReady = await pakoReady;
+        await pakoReady;
       }
       if(!record){
-        controller.close();
+        Q(()=>controller.close());
         return;
       }
       const stream = record.clone().body;
@@ -23,7 +32,7 @@ const pakoInflate = (record) =>{
         if(code !== 0){
           controller.error(new Error(`pako inflate error: ${inflator.msg}`));
         } else {
-          controller.close();
+          Q(()=>controller.close());
         }
       };
       for await (const chunk of stream){
@@ -35,6 +44,7 @@ const pakoInflate = (record) =>{
 const canDecompressFormat = format =>{
   try{
     new DecompressionStream(format);
+    return true;
   }catch{
     return false;
   }
