@@ -1,4 +1,11 @@
     (() => {
+        let archive;
+        const init = ()=>{
+            archive = import('./decompress-stream.js');
+            (async()=>{
+                archive = await archive;
+          })();
+        };
         const env = /dev/i.test(location.href) ? 'DEV' : 'PROD';
         const precache = {};
         const routes = {
@@ -40,6 +47,12 @@
         (() => {
             const _fetch = globalThis.fetch;
             globalThis.fetch = Object.setPrototypeOf(async function fetch(...args) {
+                if(!archive){
+                    init();
+                }
+                if(archive instanceof Promise){
+                    archive = await archive;
+                }
                 let res;
                 try {
                     if(env === 'DEV'){
@@ -47,7 +60,10 @@
                     }
                     const url = String(args[0].url ?? args[0]);
                     if (routes[url]) {
-                        const routesURL = String(routes[url].url ?? routes[url]);
+                        let routesURL = String(routes[url].url ?? routes[url]);
+                        if(archive.decompress.format === 'brotli'){
+                            routesURL = routesURL.replace(/gz$/,'br');
+                        }
                         if(!precache[url]){
                            precache[url] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
                         }
@@ -64,8 +80,8 @@
                                 value
                             });
                         }
-                        if (routesURL.endsWith('.gz')) {
-                            const decompressed = res.clone().body.pipeThrough(new DecompressionStream("gzip"));
+                        if (/\.(gz|br)$/.test(routesURL)) {
+                            const decompressed = archive.decompress(res);
                             res = new Response(decompressed, {
                                 status: res.status,
                                 statusText: res.statusText,
