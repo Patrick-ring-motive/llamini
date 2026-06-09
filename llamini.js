@@ -29,8 +29,8 @@
             if(word !== words[i+1]){
                 uniq.push(word);
             }
-            return uniq.join(' ');
         }
+        return uniq.join(' ');
     };
 
     let generator = null;
