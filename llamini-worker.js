@@ -10,9 +10,11 @@ self.addEventListener('message', (e) => {
     }
 });
 
-await import('./client-router.js?'+(env == 'DEV' ? new Date().getTime() : ''));
-
 const MODEL = 'Xenova/LaMini-T5-61M';
+
+let router = import('./client-router.js?'+(env == 'DEV' ? new Date().getTime() : ''));
+
+
 
 const dedup = (txt = '') => {
     const uniq = [];
@@ -31,6 +33,9 @@ let generator = null;
 
 async function loadModel() {
     try {
+        if(router instanceof Promise){
+            router = await router;
+        }
         const startTime = Date.now();
         generator = await pipeline('text2text-generation', MODEL, {
             dtype: 'q8',
@@ -59,6 +64,9 @@ async function loadModel() {
 }
 
 async function generate(id, text) {
+    if(router instanceof Promise){
+        router = await router;
+    }
     if (!generator) return;
     try {
         const result = await generator(text, {
