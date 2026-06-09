@@ -1,6 +1,6 @@
     (() => {
         const env = /dev/i.test(location.href) ? 'DEV' : 'PROD';
-        const precache {};
+        const precache = {};
         const routes = {
             'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm': {
                 url: './ort-wasm-simd-threaded.jsep.wasm.gz',
