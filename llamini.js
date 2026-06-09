@@ -20,6 +20,19 @@
         input.style.height = Math.min(input.scrollHeight, 120) + 'px';
     });
 
+    const dedup = (txt='') =>{
+        const uniq = [];
+        const words = txt.split(/\s+/);
+        const words_length = words.length;
+        for(let i = 0; i !== words_length; ++i){
+            const word = words[i];
+            if(word !== words[i+1]){
+                uniq.push(words);
+            }
+            return uniq.join(' ');
+        }
+    };
+
     let generator = null;
     let busy = false;
 
@@ -138,7 +151,7 @@
                 max_new_tokens: 128,
                 // T5 doesn't need much more — it's a text2text model
             });
-            const out = result[0]?.generated_text ?? '(no output)';
+            const out = dedup(result[0]?.generated_text) ?? '(no output)';
             thinkBubble.textContent = out;
             thinkBubble.classList.remove('thinking');
         } catch (err) {
