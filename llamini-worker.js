@@ -1,4 +1,4 @@
-import { pipeline, env } from './transformers@3.5.0.js';
+import { pipeline, env, TextStreamer } from './transformers@3.5.0.js';
 
 // Register listener before top-level await so no messages are dropped
 self.addEventListener('message', (e) => {
@@ -69,7 +69,13 @@ async function generate(id, text) {
     }
     if (!generator) return;
     try {
-        const result = await generator(text, {
+        const streamer = new TextStreamer(generator.tokenizer, {
+            skip_prompt: true,
+            callback_function: (token) => {
+                self.postMessage({ type: 'token', id, token });
+            }
+        });
+        await generator(text, {
             max_new_tokens: 128,
             temperature: 0.7,
             do_sample: true,
@@ -78,10 +84,10 @@ async function generate(id, text) {
             token_healing: true,
             renormalize_logits: true,
             num_beams: 4,
-            use_cache: true
+            use_cache: true,
+            streamer
         });
-        const out = dedup(result?.[0]?.generated_text) || '(no output)';
-        self.postMessage({ type: 'result', id, text: out });
+        self.postMessage({ type: 'result-done', id });
     } catch (err) {
         self.postMessage({ type: 'result-error', id, message: err.message });
     }
