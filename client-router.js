@@ -65,7 +65,7 @@
                             });
                         }
                         if (routesURL.endsWith('.gz')) {
-                            const decompressed = res.body.pipeThrough(new DecompressionStream("gzip"));
+                            const decompressed = res.clone().body.pipeThrough(new DecompressionStream("gzip"));
                             res = new Response(decompressed, {
                                 status: res.status,
                                 statusText: res.statusText,
@@ -78,7 +78,9 @@
                         return res;
                     }
                     res = await _fetch.apply(this, args);
-                    console.log(res,await res.clone().text());
+                    if(env === 'DEV'){
+                      console.log(res,await res.clone().text());
+                    }
                     return res;
                 } catch (e) {
                     console.warn(e,res, ...args);
