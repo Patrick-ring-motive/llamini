@@ -30,7 +30,7 @@
             const _json = Response.prototype.json;
             Response.prototype.json = Object.setPrototypeOf(async function json(...args){
                 try{
-                    return await _json.apply(this,args);
+                    return await _json.apply(this.clone(),args);
                 }catch(e){
                     console.warn(e,this,...args);
                     throw e;
@@ -75,13 +75,13 @@
                         if(env === 'DEV'){
                             console.log(res,await res.clone().text());
                         }
-                        return res;
+                        return res.clone();
                     }
                     res = await _fetch.apply(this, args);
                     if(env === 'DEV'){
                       console.log(res,await res.clone().text());
                     }
-                    return res;
+                    return res.clone();
                 } catch (e) {
                     console.warn(e,res, ...args);
                     const statusText = String(e);
