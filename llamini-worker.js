@@ -86,10 +86,10 @@ async function generate(id, text) {
     await generator(text, {
       max_new_tokens: 256,
       do_sample: true,
-      temperature: 0.7,
-      repetition_penalty: 1.3, // bump up — small models repeat a lot
+      temperature: 1.0,
+      repetition_penalty: 1.3,
       renormalize_logits: true,
-      num_beams: 1, // required for streaming
+      num_beams: 1,
       streamer,
     });
     self.postMessage({ type: "result-done", id });
