@@ -1,117 +1,117 @@
     (() => {
-        let archive;
-        const init = ()=>{
-            archive = import('./decompress-stream.js');
-            (async()=>{
-                archive = await archive;
-          })();
-        };
-        const env = /dev/i.test(location.href) ? 'DEV' : 'PROD';
-        const precache = {};
-        const routes = {
-            'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm': {
-                url: './ort-wasm-simd-threaded.jsep.wasm.gz',
-                headers: {
-                    'content-type': 'application/wasm'
-                }
-            },
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/config.json': './llamini-config.json',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer.json': './llamini-tokenizer.json',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer_config.json': './llamini-tokenizer-config.json',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/generation_config.json':'./generation-config.json',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/decoder_model_merged_quantized.onnx':'./decoder_model_merged_quantized.onnx.gz',
-            'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/encoder_model_quantized.onnx':'./encoder_model_quantized.onnx.gz'
-        };
-        (()=>{
-            const _parse = JSON.parse;
-            JSON.parse = Object.setPrototypeOf(function parse(...args){
-                try{
-                    return _parse.apply(this,args);
-                }catch(e){
-                    console.warn(e,...args);
-                    throw e;
-                }
-            },_parse);
+      let archive;
+      const init = () => {
+        archive = import('./decompress-stream.js');
+        (async () => {
+          archive = await archive;
         })();
-        (()=>{
-            const _json = Response.prototype.json;
-            Response.prototype.json = Object.setPrototypeOf(async function json(...args){
-                try{
-                    return await _json.apply(this.clone(),args);
-                }catch(e){
-                    console.warn(e,this,...args);
-                    throw e;
-                }
-            },_json);
-        })();
-        (() => {
-            const _fetch = globalThis.fetch;
-            globalThis.fetch = Object.setPrototypeOf(async function fetch(...args) {
-                if(!archive){
-                    init();
-                }
-                if(archive instanceof Promise){
-                    archive = await archive;
-                }
-                let res;
-                try {
-                    if(env === 'DEV'){
-                        console.log(...args);
-                    }
-                    const url = String(args[0].url ?? args[0]);
-                    if (routes[url]) {
-                        let routesURL = String(routes[url].url ?? routes[url]);
-                        if(archive.decompress.format === 'brotli'){
-                            routesURL = routesURL.replace(/gz$/,'br');
-                        }
-                        if(!precache[url]){
-                           precache[url] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
-                        }
-                        if(precache[url] instanceof Promise){
-                            precache[url] = (await precache[url]).clone();
-                        }
-                        res = precache[url].clone();
-                        if (routes[url].headers) {
-                            const value = new Headers(res.headers.entries());
-                            for (const header in routes[url].headers) {
-                                value.set(header, routes[url].headers[header]);
-                            }
-                            Object.defineProperty(res, 'headers', {
-                                value
-                            });
-                        }
-                        if (/\.(gz|br)$/.test(routesURL)) {
-                            const decompressed = archive.decompress(res);
-                            res = new Response(decompressed, {
-                                status: res.status,
-                                statusText: res.statusText,
-                                headers: res.headers,
-                            });
-                        }
-                        if(env === 'DEV'){
-                            console.log(res,await res.clone().text());
-                        }
-                        return res.clone();
-                    }
-                    res = await _fetch.apply(this, args);
-                    if(env === 'DEV'){
-                      console.log(res,await res.clone().text());
-                    }
-                    return res.clone();
-                } catch (e) {
-                    console.warn(e,res, ...args);
-                    const statusText = String(e);
-                    return new Response(statusText, {
-                        staus: 500,
-                        statusText
-                    });
-                }
-            }, _fetch);
-            for(const url in routes){
-                const routesURL = String(routes[url]?.url ?? routes[url]);
-                if(routesURL.endsWith('.gz')){
-                    fetch(url);
-                }
+      };
+      const env = /dev/i.test(location.href) ? 'DEV' : 'PROD';
+      const precache = {};
+      const routes = {
+        'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0/dist/ort-wasm-simd-threaded.jsep.wasm': {
+          url: './ort-wasm-simd-threaded.jsep.wasm.gz',
+          headers: {
+            'content-type': 'application/wasm'
+          }
+        },
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/config.json': './llamini-config.json',
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer.json': './llamini-tokenizer.json',
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/tokenizer_config.json': './llamini-tokenizer-config.json',
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/generation_config.json': './generation-config.json',
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/decoder_model_merged_quantized.onnx': './decoder_model_merged_quantized.onnx.gz',
+        'https://huggingface.co/Xenova/LaMini-T5-61M/resolve/main/onnx/encoder_model_quantized.onnx': './encoder_model_quantized.onnx.gz'
+      };
+      (() => {
+        const _parse = JSON.parse;
+        JSON.parse = Object.setPrototypeOf(function parse(...args) {
+          try {
+            return _parse.apply(this, args);
+          } catch (e) {
+            console.warn(e, ...args);
+            throw e;
+          }
+        }, _parse);
+      })();
+      (() => {
+        const _json = Response.prototype.json;
+        Response.prototype.json = Object.setPrototypeOf(async function json(...args) {
+          try {
+            return await _json.apply(this.clone(), args);
+          } catch (e) {
+            console.warn(e, this, ...args);
+            throw e;
+          }
+        }, _json);
+      })();
+      (() => {
+        const _fetch = globalThis.fetch;
+        globalThis.fetch = Object.setPrototypeOf(async function fetch(...args) {
+          if (!archive) {
+            init();
+          }
+          if (archive instanceof Promise) {
+            archive = await archive;
+          }
+          let res;
+          try {
+            if (env === 'DEV') {
+              console.log(...args);
             }
-        })();
+            const url = String(args[0].url ?? args[0]);
+            if (routes[url]) {
+              let routesURL = String(routes[url].url ?? routes[url]);
+              if (archive.decompress.format === 'brotli') {
+                routesURL = routesURL.replace(/gz$/, 'br');
+              }
+              if (!precache[url]) {
+                precache[url] = _fetch(`${routesURL}?${env === 'DEV' ? new Date().getTime() : ''}`);
+              }
+              if (precache[url] instanceof Promise) {
+                precache[url] = (await precache[url]).clone();
+              }
+              res = precache[url].clone();
+              if (routes[url].headers) {
+                const value = new Headers(res.headers.entries());
+                for (const header in routes[url].headers) {
+                  value.set(header, routes[url].headers[header]);
+                }
+                Object.defineProperty(res, 'headers', {
+                  value
+                });
+              }
+              if (/\.(gz|br)$/.test(routesURL)) {
+                const decompressed = archive.decompress(res);
+                res = new Response(decompressed, {
+                  status: res.status,
+                  statusText: res.statusText,
+                  headers: res.headers,
+                });
+              }
+              if (env === 'DEV') {
+                console.log(res, await res.clone().text());
+              }
+              return res.clone();
+            }
+            res = await _fetch.apply(this, args);
+            if (env === 'DEV') {
+              console.log(res, await res.clone().text());
+            }
+            return res.clone();
+          } catch (e) {
+            console.warn(e, res, ...args);
+            const statusText = String(e);
+            return new Response(statusText, {
+              staus: 500,
+              statusText
+            });
+          }
+        }, _fetch);
+        for (const url in routes) {
+          const routesURL = String(routes[url]?.url ?? routes[url]);
+          if (routesURL.endsWith('.gz')) {
+            fetch(url);
+          }
+        }
+      })();
     })();
