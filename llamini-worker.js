@@ -1,8 +1,16 @@
-import { pipeline, env, TextStreamer } from "./transformers@3.5.0.js";
+import {
+  pipeline,
+  env,
+  TextStreamer
+} from "./transformers@3.5.0.js";
 
 // Register listener before top-level await so no messages are dropped
 self.addEventListener("message", (e) => {
-  const { type, id, text } = e.data;
+  const {
+    type,
+    id,
+    text
+  } = e.data;
   if (type === "load") {
     loadModel();
   } else if (type === "generate") {
@@ -43,12 +51,24 @@ async function loadModel() {
         try {
           if (p.status === "downloading" && p.total) {
             const pct = Math.round((p.loaded / p.total) * 100);
-            self.postMessage({ type: "progress", pct });
-            self.postMessage({ type: "status", text: `downloading… ${pct}%` });
+            self.postMessage({
+              type: "progress",
+              pct
+            });
+            self.postMessage({
+              type: "status",
+              text: `downloading… ${pct}%`
+            });
           } else if (p.status === "initiate") {
-            self.postMessage({ type: "status", text: "loading weights…" });
+            self.postMessage({
+              type: "status",
+              text: "loading weights…"
+            });
           } else if (p.status === "loading") {
-            self.postMessage({ type: "status", text: "compiling wasm…" });
+            self.postMessage({
+              type: "status",
+              text: "compiling wasm…"
+            });
           }
         } catch (err) {
           self.postMessage({
@@ -61,7 +81,10 @@ async function loadModel() {
     });
 
     const elapsed = (Date.now() - startTime) / 1000;
-    self.postMessage({ type: "loaded", elapsed });
+    self.postMessage({
+      type: "loaded",
+      elapsed
+    });
   } catch (err) {
     self.postMessage({
       type: "load-error",
@@ -80,7 +103,11 @@ async function generate(id, text) {
     const streamer = new TextStreamer(generator.tokenizer, {
       skip_prompt: true,
       callback_function: (token) => {
-        self.postMessage({ type: "token", id, token });
+        self.postMessage({
+          type: "token",
+          id,
+          token
+        });
       },
     });
     await generator(text, {
@@ -88,15 +115,22 @@ async function generate(id, text) {
       do_sample: true,
       temperature: 1.0,
       repetition_penalty: 1.1,
-      length_penalty:1.1,
-      token_healing:true,
-      renormalize_logits:true,
-      num_beams:4,
-      use_cache:true,
+      length_penalty: 1.1,
+      token_healing: true,
+      renormalize_logits: true,
+      num_beams: 4,
+      use_cache: true,
       streamer,
     });
-    self.postMessage({ type: "result-done", id });
+    self.postMessage({
+      type: "result-done",
+      id
+    });
   } catch (err) {
-    self.postMessage({ type: "result-error", id, message: err.message });
+    self.postMessage({
+      type: "result-error",
+      id,
+      message: err.message
+    });
   }
 }
