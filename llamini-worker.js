@@ -87,9 +87,12 @@ async function generate(id, text) {
       max_new_tokens: 256,
       do_sample: true,
       temperature: 1.0,
-      repetition_penalty: 1.3,
-      renormalize_logits: true,
-      num_beams: 1,
+      repetition_penalty: 1.1,
+      length_penalty:1.1,
+      token_healing:true,
+      renormalize_logits:true,
+      num_beams:4,
+      use_cache:true,
       streamer,
     });
     self.postMessage({ type: "result-done", id });
