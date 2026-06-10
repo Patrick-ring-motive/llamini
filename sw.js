@@ -1,9 +1,12 @@
-const fetchResponse = async(...args)=>{
-  try{
+const fetchResponse = async (...args) => {
+  try {
     return await fetch(...args);
-  }catch(e){
-    console.warn(e,...args);
-    return new Response(String(e),{status:500,statusText:String(e)});
+  } catch (e) {
+    console.warn(e, ...args);
+    return new Response(String(e), {
+      status: 500,
+      statusText: String(e)
+    });
   }
 };
 // NOTE: This file creates a service worker that cross-origin-isolates the page
@@ -53,7 +56,11 @@ if (typeof window === 'undefined') {
     headers.set("Cross-Origin-Embedder-Policy", "credentialless"); // or: require-corp
     headers.set("Cross-Origin-Opener-Policy", "same-origin");
 
-    return new Response(r.body, { status: r.status, statusText: r.statusText, headers });
+    return new Response(r.body, {
+      status: r.status,
+      statusText: r.statusText,
+      headers
+    });
   }
 
   // respondWith must be called synchronously (can be passed a Promise)
@@ -61,7 +68,7 @@ if (typeof window === 'undefined') {
 
 } else {
   // ── PAGE SIDE ────────────────────────────────────────────────────────────
-  (async function () {
+  (async function() {
     if (window.crossOriginIsolated !== false) return;
 
     const registration = await navigator.serviceWorker
