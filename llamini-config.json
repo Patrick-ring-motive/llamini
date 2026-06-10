@@ -3,7 +3,7 @@
   "architectures": [
     "T5ForConditionalGeneration"
   ],
-  "classifier_dropout": 0.0,
+  "classifier_dropout": 0,
   "d_ff": 2048,
   "d_kv": 64,
   "d_model": 512,
@@ -12,10 +12,10 @@
   "dropout_rate": 0.1,
   "eos_token_id": 1,
   "feed_forward_proj": "relu",
-  "initializer_factor": 1.0,
+  "initializer_factor": 1,
   "is_encoder_decoder": true,
   "is_gated_act": false,
-  "layer_norm_epsilon": 1e-06,
+  "layer_norm_epsilon": 0.000001,
   "model_type": "t5",
   "n_positions": 512,
   "num_decoder_layers": 6,
@@ -28,7 +28,7 @@
   "task_specific_params": {
     "summarization": {
       "early_stopping": true,
-      "length_penalty": 2.0,
+      "length_penalty": 2,
       "max_length": 200,
       "min_length": 30,
       "no_repeat_ngram_size": 3,
