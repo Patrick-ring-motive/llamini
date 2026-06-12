@@ -32,8 +32,11 @@
       font-family: var(--font-sans);
       font-size: 15px;
       -webkit-font-smoothing: antialiased;
-      max-height: var(--min-vh) !important;
+      
     }
+body{
+    max-height: var(--min-vh) !important;
+}
 
     #app {
       display: flex;
